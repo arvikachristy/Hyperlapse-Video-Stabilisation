@@ -7,6 +7,7 @@ inputImage = imresize(inputImage, 0.3);
 cm_storage = [];
 
 for x = 1:imageN-1
+    fprintf('%i\n',x);
     holder_model = [];
     holder_perc = 0;
     hodler_diff = 0;
@@ -28,15 +29,18 @@ for x = 1:imageN-1
 %     figure; showMatchedFeatures(img1,img2,matchedPoints1,matchedPoints2);
 
     for ran = 1:200
-        
-        
+
         index_st = randperm(size(matchedPoints1,1),4);
 
         pnt1 = matchedPoints1(index_st, :).Location;
         pnt2 = matchedPoints2(index_st, :).Location;
-
-        model = fitgeotrans(pnt1, pnt2, 'projective');
-
+        
+        try
+            model = fitgeotrans(pnt1, pnt2, 'projective');
+        catch
+            continue;
+        end 
+        
         [x,y] = transformPointsForward(model, matchedPoints1.Location(:,1),...
             matchedPoints1.Location(:,2)); 
 
