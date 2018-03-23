@@ -4,12 +4,19 @@ inputImage = imresize(inputImage, 0.3);
 
 [height,width,~,imageN] = size(inputImage);
 
-cm_storage = [];
+% %get distance matrix
+% if ~exist('d_matrix.mat')
+%     d_matrix = compute_dist(inputImage);
+%     save('d_matrix.mat', 'd_matrix');
+% else
+%     load('d_matrix.mat', 'd_matrix');
+% end
+
+holder_model = [];
+holder_perc = 0;
+hodler_diff = 0;
 
 for x = 1:imageN-1
-    holder_model = [];
-    holder_perc = 0;
-    hodler_diff = 0;
     %Find matching points
     img1 = rgb2gray(inputImage(:,:,:,x));
     img2 = rgb2gray(inputImage(:,:,:,x+1));
@@ -28,8 +35,7 @@ for x = 1:imageN-1
 %     figure; showMatchedFeatures(img1,img2,matchedPoints1,matchedPoints2);
 
     for ran = 1:200
-        
-        
+
         index_st = randperm(size(matchedPoints1,1),4);
 
         pnt1 = matchedPoints1(index_st, :).Location;
@@ -75,5 +81,6 @@ for x = 1:imageN-1
     else
         cm = g;  
     end
+
 end
 implay(inputImage);
