@@ -1,17 +1,26 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Courtesy of Vika Christy 2018 for Computational Photography Coursework UCL
+%Hyperlapse - Project 2(Submission)
+%Student Number: 14049380
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 path = 'road-camden';
 inputImage = load_sequence_color(path,'op',1,100,5,'png');
 inputImage = imresize(inputImage, 0.3);
 
 [height,width,~,imageN] = size(inputImage);
 
-cm_storage = [];
+cm_storage = zeros(imageN, imageN);
 
-for i = 1:imageN-1
-%     fprintf('%i\n',x);
+for p = 1:imageN-1
+    
+%%%%%%%%%%%%%%%%%%%%Part 1 - Frame Matching %%%%%%%%%%%%%%%%%%%%%%%%%%
+    i = p;
+    j = p+1;
 
-    %Find matching points
     img1 = rgb2gray(inputImage(:,:,:,i));
-    img2 = rgb2gray(inputImage(:,:,:,i+1));
+    img2 = rgb2gray(inputImage(:,:,:,j));
     
     points1 = detectHarrisFeatures(img1);
     points2 = detectHarrisFeatures(img2);
@@ -46,6 +55,28 @@ for i = 1:imageN-1
     else
         cm = g;  
     end
-    cm_storage = [cm_storage, cm];
+    
+    cm_storage(i,j) = cm; %modify the data structure
+    
+%%%%%%%%%%%%%%%%%%%%Part 2 - Frame Selection %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%     cost_s(i,j) = min((i+1)-i);
 end
-implay(inputImage);
+
+
+
+function res = frame_selection(i, j, v, h, cm_storage)
+    ts = 200; %Dont think this is right
+    ta = 200;
+    ls = 200;
+    la = 80;
+    
+    c_s = min(abs((j-i)-v)^2, ts);
+    
+    c_a = min(abs((j-i)-(i-h))^2, ta);
+    
+    total_c = cm_storage(i,j) + ls*c_s + la*c_a;
+
+end
+
+% implay(inputImage);
