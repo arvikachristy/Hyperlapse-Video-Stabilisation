@@ -10,66 +10,82 @@ runme()
 function runme()
 tic
 path = 'road-camden';
-inputImage = load_sequence_color(path,'op',1,100,5,'png');
-inputImage = imresize(inputImage, 0.3);
-
-[height,width,~,imageN] = size(inputImage);
-
-cm_storage = zeros(imageN, imageN);
+until_f = 1020;
+start_f = 1000; 
+stitch_jump = 20;
 w = 12;
+cur_add = 0;
+totalN = until_f-start_f;
+cm_storage = zeros(totalN, totalN);
 
 if ~exist('cm_storage.mat')
-    for i = 1:imageN-1
-        if(imageN-i > w-2)
-            last = i+(w-1);
-        else
-            last = imageN;
-        end
+    for x = start_f:stitch_jump:until_f
+        disp(x);
+        end_f = x+(stitch_jump-1);
+        
+        inputImage = load_sequence_color(path,'op',x,end_f,5,'png');
+        inputImage = imresize(inputImage, 0.3);
 
-        for j = i+1:last
-        %%%%%%%%%%%%%%%%%%%%Part 1 - Frame Matching %%%%%%%%%%%%%%%%%%%%%%%%%%
+        [height,width,~,imageN] = size(inputImage);
 
-            img1 = rgb2gray(inputImage(:,:,:,i));
-            img2 = rgb2gray(inputImage(:,:,:,j));
-
-            points1 = detectHarrisFeatures(img1);
-            points2 = detectHarrisFeatures(img2);
-
-            [features1,valid_points1] = extractFeatures(img1,points1);
-            [features2,valid_points2] = extractFeatures(img2,points2);   
-
-            indexPairs = matchFeatures(features1,features2);
-
-            matchedPoints1 = valid_points1(indexPairs(:,1),:);
-            matchedPoints2 = valid_points2(indexPairs(:,2),:);
-
-        %     figure; showMatchedFeatures(img1,img2,matchedPoints1,matchedPoints2);
-            [holder_diff, holder_model] = ransac(matchedPoints1, matchedPoints2);
-
-            cost1 = mean(holder_diff);
-
-            [x,y] = transformPointsForward(holder_model, width/2, height/2); 
-
-            distx = (x - width/2).^2;
-            disty = (y - height/2).^2;
-
-            diff = distx + disty;
-
-            cost2 = diff;
-            d = height^2 + width^2;
-            tc = 0.1*d;
-            g = 0.5*d;
-
-            if(cost1<tc)
-                cm = cost2; 
+        for i = 1:imageN-1
+            if(imageN-i > w-2)
+                last = i+(w-1);
             else
-                cm = g;  
+%                 pi = cat(4,pom, momo);
+                last = imageN;
             end
 
-            cm_storage(i,j) = cm; %modify the data structure
+            for j = i+1:last
+            %%%%%%%%%%%%%%%%%%%%Part 1 - Frame Matching %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+                img1 = rgb2gray(inputImage(:,:,:,i));
+                img2 = rgb2gray(inputImage(:,:,:,j));
+
+                points1 = detectHarrisFeatures(img1);
+                points2 = detectHarrisFeatures(img2);
+
+                [features1,valid_points1] = extractFeatures(img1,points1);
+                [features2,valid_points2] = extractFeatures(img2,points2);   
+
+                indexPairs = matchFeatures(features1,features2);
+
+                matchedPoints1 = valid_points1(indexPairs(:,1),:);
+                matchedPoints2 = valid_points2(indexPairs(:,2),:);
+
+            %     figure; showMatchedFeatures(img1,img2,matchedPoints1,matchedPoints2);
+                [holder_diff, holder_model] = ransac(matchedPoints1, matchedPoints2);
+
+                cost1 = mean(holder_diff);
+
+                [x,y] = transformPointsForward(holder_model, width/2, height/2); 
+
+                distx = (x - width/2).^2;
+                disty = (y - height/2).^2;
+
+                diff = distx + disty;
+
+                cost2 = diff;
+                d = height^2 + width^2;
+                tc = 0.1*d;
+                g = 0.5*d;
+
+                if(cost1<tc)
+                    cm = cost2; 
+                else
+                    cm = g;  
+                end
+
+                cm_storage(cur_add+i, cur_add+j) = cm; %modify the data structure
+            end
+        end
+        cur_add = cur_add + (stitch_jump-1); %keep track of stitching
+        if ~exist('cm_storage.mat') 
+            save('cm_storage.mat', 'cm_storage');
+        else
+            save('cm_storage.mat', 'cm_storage', '-append');
         end
     end
-    save('cm_storage.mat', 'cm_storage');
 else
     load('cm_storage.mat', 'cm_storage');
 end
@@ -151,7 +167,6 @@ toc
 
 finale = zeros(height, width, 3, 3);
 origin = zeros(height, width, 3, 3);
-
 for r = 1:size(path,2)
     finale(:,:,:,r) = inputImage(:,:,:,path(r));
     if(8*r<imageN)
