@@ -151,12 +151,13 @@ toc
 
 finale = zeros(height, width, 3, 3);
 origin = zeros(height, width, 3, 3);
+
 for r = 1:size(path,2)
     finale(:,:,:,r) = inputImage(:,:,:,path(r));
     if(8*r<imageN)
         origin(:,:,:,r) = inputImage(:,:,:,8*r);
     else
-        origin(:,:,:,r) = inputImage(:,:,:,8*r);
+        origin(:,:,:,r) = inputImage(:,:,:,imageN);
     end
 end
 
