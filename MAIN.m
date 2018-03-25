@@ -31,9 +31,11 @@ if ~exist('cm_storage.mat')
         for i = 1:imageN-1
             if(imageN-i > w-2)
                 last = i+(w-1);
-            else
-%                 pi = cat(4,pom, momo);
-                last = imageN;
+            else    
+                patchImage = load_sequence_color(path,'op',end_f,end_f+(w-1),5,'png');
+                patchImage = imresize(patchImage, 0.3);                
+                inputImage = cat(4,inputImage, patchImage);
+                last = i+(w-1);
             end
 
             for j = i+1:last

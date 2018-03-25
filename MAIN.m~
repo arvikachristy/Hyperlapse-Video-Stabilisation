@@ -32,7 +32,10 @@ if ~exist('cm_storage.mat')
             if(imageN-i > w-2)
                 last = i+(w-1);
             else
-                last = imageN;
+                inputImage = load_sequence_color(path,'op',i,end_f,5,'png');
+                inputImage = imresize(inputImage, 0.3);                
+%                  pi = cat(4,pom, momo);
+                last = i+(w-1);
             end
 
             for j = i+1:last
