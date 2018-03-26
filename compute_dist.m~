@@ -3,9 +3,9 @@ function res = compute_dist(inputImage)
 [~, ~, ~, imageN] = size(inputImage);
 
 d_storage = zeros(imageN, imageN);
-for x= 1:imageN-100
+for x= 101:imageN-100
     disp(x);
-    for y = x+1:x+100
+    for y = x-100:x+100
         m1 = sum(sum((inputImage(:,:,1,x) - inputImage(:,:,1,y)).^2));
         m2 = sum(sum((inputImage(:,:,2,x) - inputImage(:,:,2,y)).^2));
         m3 = sum(sum((inputImage(:,:,3,x) - inputImage(:,:,3,y)).^2));

@@ -10,9 +10,11 @@ runme()
 function runme()
 tic
 path = 'road-camden';
-until_f = 1020;
-start_f = 1000; 
-stitch_jump = 20;
+
+frameFiltering(path, 1001, 3000);
+
+start_f = 1001; until_f = 3000;
+stitch_jump = 300;
 w = 12;
 cur_add = 0;
 totalN = until_f-start_f;
@@ -90,6 +92,27 @@ if ~exist('cm_storage.mat')
     end
 else
     load('cm_storage.mat', 'cm_storage');
+end
+
+inputImage = load_sequence_color(path,'op',start_f,100+start_f,5,'png');
+inputImage = imresize(inputImage, 0.3);
+
+for e = 100+start_f+1:100:1790
+    disp(e);
+    patchImage = load_sequence_color(path,'op',e,99+e,5,'png');
+    patchImage = imresize(patchImage, 0.3); 
+    inputImage = cat(4,inputImage, patchImage);
+end
+
+[height,width,~,imageN] = size(inputImage);
+
+origin = zeros(height, width, 3, 3);
+for r = 1:size(path,2)
+    if(8*r<imageN)
+        origin(:,:,:,r) = inputImage(:,:,:,8*r);
+    else
+        origin(:,:,:,r) = inputImage(:,:,:,imageN);
+    end
 end
 
 
