@@ -1,5 +1,6 @@
 /road-camden/
 /stairs_30fps/
+*.mat
 
 # Windows image file caches
 Thumbs.db
