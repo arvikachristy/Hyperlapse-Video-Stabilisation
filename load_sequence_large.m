@@ -1,13 +1,13 @@
- path = 'road-camden';
+ 
 % 
-first=1;
-last=5;
-% digits=5;
-% prefix='op';
-% suffix='png';
-reduce_image(path,'op',first,last,5,'png', 0.3);
+% first=1;
+% last=5;
+% % digits=5;
+% % prefix='op';
+% % suffix='png';
+% reduce_image(path,'op',first,last,5,'png', 0.3);
 
-function reduce_image(path,prefix, first, last, digits, suffix, resize)
+function load_sequence_large(path,prefix, first, last, digits, suffix, resize)
 number = padded_number(first, digits);
 % Check for slash at the end of the path
 if(path(end)=='/')
@@ -32,7 +32,7 @@ filename='largeImg.mat';
 output = matfile(filename,'Writable',true);
 
 for i=2:last-first+1
-
+    disp(i);
     % Get the padded frame number
     number = padded_number(first+i-1, digits);
 

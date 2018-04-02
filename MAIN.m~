@@ -4,13 +4,18 @@
 %Student Number: 14049380
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 runme()
 
 function runme()
 tic
-path = 'road-camden';
-start_f = 1000; until_f = 3000;
+path = 'road-camden-rename';
+
+chosenFrames = frameFiltering(path, 1, 2000);
+
+playFrame(chosenFrames, path); 
+%produces benchmark video by selecting every 8 frames
+
+start_f = 1001; until_f = 3000;
 stitch_jump = 300;
 w = 12;
 cur_add = 0;
@@ -22,8 +27,7 @@ if ~exist('cm_storage.mat')
         disp(x);
         end_f = x+(stitch_jump-1);
         
-        inputImage = load_sequence_color(path,'op',x,end_f,5,'png');
-        inputImage = imresize(inputImage, 0.3);
+        inputImage = load_sequence_color(path,'op',x,end_f,5,'png', 0.5);
 
         [height,width,~,imageN] = size(inputImage);
 
@@ -31,8 +35,7 @@ if ~exist('cm_storage.mat')
             if(imageN-i > w-2)
                 last = i+(w-1);
             else    
-                patchImage = load_sequence_color(path,'op',end_f,end_f+(w-1),5,'png');
-                patchImage = imresize(patchImage, 0.3);                
+                patchImage = load_sequence_color(path,'op',end_f,end_f+(w-1),5,'png', 0.5);           
                 inputImage = cat(4,inputImage, patchImage);
                 last = i+(w-1);
             end
@@ -91,13 +94,11 @@ else
     load('cm_storage.mat', 'cm_storage');
 end
 
-inputImage = load_sequence_color(path,'op',start_f,100+start_f,5,'png');
-inputImage = imresize(inputImage, 0.3);
+inputImage = load_sequence_color(path,'op',start_f,100+start_f,5,'png', 0.5);
 
 for e = 100+start_f+1:100:1790
     disp(e);
-    patchImage = load_sequence_color(path,'op',e,99+e,5,'png');
-    patchImage = imresize(patchImage, 0.3); 
+    patchImage = load_sequence_color(path,'op',e,99+e,5,'png', 0.5);
     inputImage = cat(4,inputImage, patchImage);
 end
 

@@ -4,16 +4,18 @@
 %Student Number: 14049380
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
 runme()
 
 function runme()
 tic
-path = 'road-camden';
+path = 'road-camden-rename';
 
-frameFiltering(path, 1001, 3000);
+chosenFrames = frameFiltering(path, 1, 2000);
 
-start_f = 1001; until_f = 3000;
+resInputImg = playFrame(chosenFrames, path); 
+%produces benchmark video by selecting every 8 frames
+
+start_f = 1; until_f = 2000;
 stitch_jump = 300;
 w = 12;
 cur_add = 0;
@@ -25,17 +27,17 @@ if ~exist('cm_storage.mat')
         disp(x);
         end_f = x+(stitch_jump-1);
         
-        inputImage = load_sequence_color(path,'op',x,end_f,5,'png');
-        inputImage = imresize(inputImage, 0.3);
+        inputImage = load_sequence_color(path,'op',x,end_f,5,'png', 0.5);
 
         [height,width,~,imageN] = size(inputImage);
 
         for i = 1:imageN-1
+            disp('Ransac no:');
+            disp(i);
             if(imageN-i > w-2)
                 last = i+(w-1);
             else    
-                patchImage = load_sequence_color(path,'op',end_f,end_f+(w-1),5,'png');
-                patchImage = imresize(patchImage, 0.3);                
+                patchImage = load_sequence_color(path,'op',end_f,end_f+(w-1),5,'png', 0.5);           
                 inputImage = cat(4,inputImage, patchImage);
                 last = i+(w-1);
             end
@@ -93,27 +95,25 @@ if ~exist('cm_storage.mat')
 else
     load('cm_storage.mat', 'cm_storage');
 end
-
-inputImage = load_sequence_color(path,'op',start_f,100+start_f,5,'png');
-inputImage = imresize(inputImage, 0.3);
-
-for e = 100+start_f+1:100:1790
-    disp(e);
-    patchImage = load_sequence_color(path,'op',e,99+e,5,'png');
-    patchImage = imresize(patchImage, 0.3); 
-    inputImage = cat(4,inputImage, patchImage);
-end
-
-[height,width,~,imageN] = size(inputImage);
-
-origin = zeros(height, width, 3, 3);
-for r = 1:size(path,2)
-    if(8*r<imageN)
-        origin(:,:,:,r) = inputImage(:,:,:,8*r);
-    else
-        origin(:,:,:,r) = inputImage(:,:,:,imageN);
-    end
-end
+% 
+% inputImage = load_sequence_color(path,'op',start_f,100+start_f,0,'png', 0.5);
+% 
+% for e = 100+start_f+1:100:1790
+%     disp(e);
+%     patchImage = load_sequence_color(path,'op',e,99+e,0,'png', 0.5);
+%     inputImage = cat(4,inputImage, patchImage);
+% end
+% 
+% [height,width,~,imageN] = size(inputImage);
+% 
+% origin = zeros(height, width, 3, 3);
+% for r = 1:size(path,2)
+%     if(8*r<imageN)
+%         origin(:,:,:,r) = inputImage(:,:,:,8*r);
+%     else
+%         origin(:,:,:,r) = inputImage(:,:,:,imageN);
+%     end
+% end
 
 
 %%%%%%%%%%%%%%%%%%%%Part 2 - Frame Selection %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -173,9 +173,9 @@ for i = imageN-g:imageN
     end
 end
 
-path = [d];
+path_chosen = [d];
 while(s>g)
-    path = [s,path];
+    path_chosen = [s,path_chosen];
     b = Tv(s,d);
     d=s; s=b;
 end
@@ -192,8 +192,8 @@ toc
 
 finale = zeros(height, width, 3, 3);
 origin = zeros(height, width, 3, 3);
-for r = 1:size(path,2)
-    finale(:,:,:,r) = inputImage(:,:,:,path(r));
+for r = 1:size(path_chosen,2)
+    finale(:,:,:,r) = inputImage(:,:,:,path_chosen(r));
     if(8*r<imageN)
         origin(:,:,:,r) = inputImage(:,:,:,8*r);
     else
