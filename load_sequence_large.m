@@ -1,11 +1,13 @@
-% path = 'road-camden';
+ path = 'road-camden';
 % 
-% first=1;
-% last=1000;
+first=1;
+last=5;
 % digits=5;
 % prefix='op';
 % suffix='png';
-function load_sequence_large(path,prefix, first, last, digits, suffix)
+reduce_image(path,'op',first,last,5,'png', 0.3);
+
+function reduce_image(path,prefix, first, last, digits, suffix, resize)
 number = padded_number(first, digits);
 % Check for slash at the end of the path
 if(path(end)=='/')
@@ -18,7 +20,7 @@ end
 filename = strcat(path,slash,prefix,number,'.',suffix);
 
 % Load image and convert it to gray level
-current = im2double(imread(filename));
+current = im2double(imresize(imread(filename), resize));
 
 holder = current;
 
@@ -38,7 +40,7 @@ for i=2:last-first+1
     filename = strcat(path,slash,prefix,number,'.',suffix);
 
     % Load image and convert it to gray level
-    current = im2double(imread(filename));
+    current = im2double(imresize(imread(filename), resize));
 
     % Update output matrix
     output.holder(:,:,:,i) = current;
