@@ -1,11 +1,14 @@
 %Simple function to show video based on given path
 function origin = playFrame(selected_frame, path)
 
+%     videoFinal = VideoWriter('final_video.mp4','MPEG-4');
+%     open(videoFinal);
+
     origin = zeros(360, 640, 3, 3);
     count = 1;
     
     for r = 1:size(selected_frame,2)
-%         if(mod(r,8) == 1)
+%          if(mod(r,8) == 1)
             disp(r);
             if(path(end)=='/')
                 slash='';
@@ -20,9 +23,12 @@ function origin = playFrame(selected_frame, path)
             gotimg = im2double(imresize(imread(filename), 0.5));        
 
             origin(:,:,:,count) = gotimg;
-            count = count+1;    
-%         end
+%             writeVideo(videoFinal,origin(:,:,:,count));
+            
+            count = count+1;
+%          end
     end
+%     close(videoFinal);
     implay(origin);
     
 end
