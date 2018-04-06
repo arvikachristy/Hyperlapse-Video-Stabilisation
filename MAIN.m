@@ -8,15 +8,19 @@ runme()
 
 function runme()
 tic
-path = 'road-camden-rename';
+path = 'shaky-holloway';
 
 chosenFrames = frameFiltering(path, 1, 2000);
 
-resInputImg = playFrame(chosenFrames, path); 
-%produces benchmark video
+if ~exist('resInputImg.mat')
+    %produces benchmark video
+    resInputImg = playFrame(chosenFrames, path);
+else
+    load('resInputImg.mat', 'resInputImg');
+end
 
 start_f = 1; until_f = size(resInputImg,4);
-w = 12;
+w = 11;
 totalN = until_f-start_f;
 cm_storage = zeros(totalN, totalN);
 
@@ -87,32 +91,15 @@ if ~exist('cm_storage.mat')
 else
     load('cm_storage.mat', 'cm_storage');
 end
-% 
-% inputImage = load_sequence_color(path,'op',start_f,100+start_f,0,'png', 0.5);
-% 
-% for e = 100+start_f+1:100:1790
-%     disp(e);
-%     patchImage = load_sequence_color(path,'op',e,99+e,0,'png', 0.5);
-%     inputImage = cat(4,inputImage, patchImage);
-% end
-% 
-% [height,width,~,imageN] = size(inputImage);
-% 
-% origin = zeros(height, width, 3, 3);
-% for r = 1:size(path,2)
-%     if(8*r<imageN)
-%         origin(:,:,:,r) = inputImage(:,:,:,8*r);
-%     else
-%         origin(:,:,:,r) = inputImage(:,:,:,imageN);
-%     end
-% end
 
+img1 = inputImage(:,:,:,100);
+img2 = inputImage(:,:,:,200);
 
 %%%%%%%%%%%%%%%%%%%%Part 2 - Frame Selection %%%%%%%%%%%%%%%%%%%%%%%%%%
 g = 4;v = 8;
 ts = 200;
-ls = 200;
-la = 80;
+ls = 5;
+la = 2;
 
 Dv = zeros(imageN, imageN);
 for i = 1:g
@@ -172,16 +159,6 @@ while(s>g)
     d=s; s=b;
 end
 
-
-function res = c_a(h, i, j)
-    ta = 200;
-    res = min(((j-i)-(i-h))^2, ta);
-
-%     total_c = cm_storage(i,j) + ls*c_s + la*c_a;
-
-end
-toc
-
 finale = zeros(height, width, 3, 3);
 origin = zeros(height, width, 3, 3);
 for r = 1:size(path_chosen,2)
@@ -193,8 +170,13 @@ for r = 1:size(path_chosen,2)
     end
 end
 
-implay([origin,finale]);
-
-    
+implay(finale);
+toc
 
 end
+
+function res = c_a(h, i, j)
+    ta = 200;
+    res = min(((j-i)-(i-h))^2, ta);
+end
+

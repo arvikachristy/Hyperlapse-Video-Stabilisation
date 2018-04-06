@@ -21,7 +21,7 @@ toc
 
 %Filter Frames thats less than threshold
 similarFrames = mean(d_matrix, 2);
-binFrames = similarFrames > 0.0050;
+binFrames = similarFrames > 0.0040;
 
 chosenFrames = [];
 
