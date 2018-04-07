@@ -3,6 +3,7 @@
 /stairs_30fps/
 /shaky-holloway/
 *.mat
+*.mp4
 
 # Windows image file caches
 Thumbs.db
