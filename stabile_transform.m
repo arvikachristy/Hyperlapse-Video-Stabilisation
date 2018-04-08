@@ -1,4 +1,4 @@
-function [t, indexPairs] = stabile_transform(leftI,rightI,ptThresh)
+function [H, indexPairs] = stabile_transform(leftI,rightI,ptThresh)
 
 if nargin < 3 || isempty(ptThresh)
     ptThresh = 0.1;

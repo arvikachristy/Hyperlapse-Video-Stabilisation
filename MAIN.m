@@ -198,7 +198,7 @@ while idx <= size(path_chosen,2)
         crop=50;
         pom(:,:,:,counter) = imresize(imgBp(crop:height-crop,crop:width-crop,:), [height, width]);
         counter = counter+1;
-        % Display as color composite with last corrected frame
+
         correctedMean = correctedMean + imgBp;
 
         idx = idx+1;
