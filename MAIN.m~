@@ -159,7 +159,7 @@ end
 %Put the final path together
 finale = zeros(height, width, 3, 3);
 origin = zeros(height, width, 3, 3);
-% store = [];
+%  store = [];
 for r = 1:size(path_chosen,2)
     finale(:,:,:,r) = inputImage(:,:,:,path_chosen(r));
     if(8*r<imageN)
@@ -171,106 +171,44 @@ for r = 1:size(path_chosen,2)
     end
 end
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%Part 4 - Frame Stabilisation %%%%%%%%%%%%%%%%%%%%%%
 % Process all frames in the video
 movMean = rgb2gray(finale(:,:,:,1));
 imgB = movMean;
 imgBp = imgB;
 correctedMean = imgBp;
-ii = 2;
+idx = 2;
 Hcumulative = eye(3);
-pom = zeros(size(movMean,1),size(movMean,2),size(path_chosen,2));
+pom = zeros(size(movMean,1),size(movMean,2),3,size(path_chosen,2)-1);
 counter =1;
-
-while ii <= size(path_chosen,2)
-    % Read in new frame
-    
-    imgA = imgB; % z^-1
-    imgAp = imgBp; % z^-1
-    imgB = rgb2gray(finale(:,:,:,ii));
+ind_store = [];
+while idx <= size(path_chosen,2)   
+    imgA = imgB; 
+    imgB = rgb2gray(finale(:,:,:,idx));
+    colorImg = finale(:,:,:,idx);
     movMean = movMean + imgB;
 
-    % Estimate transform from frame A to frame B, and fit as an s-R-t
-    H = cvexEstStabilizationTform(imgA,imgB);
-    HsRt = cvexTformToSRT(H);
-    Hcumulative = HsRt * Hcumulative;
-    imgBp = imwarp(imgB,affine2d(HsRt),'OutputView',imref2d(size(imgB)));
-    pom(:,:,counter) = imgBp;
-    counter = counter+1;
-    % Display as color composite with last corrected frame
-    correctedMean = correctedMean + imgBp;
-    
-    ii = ii+1;
+    [H, indexPairs] = stabile_transform(imgA,imgB);
+    ind_store = [ind_store, size(indexPairs,1)];
+    if(size(indexPairs,1)>59)
+        HsRt = cvexTformToSRT(H);
+        Hcumulative = HsRt * Hcumulative;
+        imgBp = imwarp(colorImg,affine2d(Hcumulative),'OutputView',imref2d(size(colorImg)));
+
+        crop=50;
+        pom(:,:,:,counter) = imresize(imgBp(crop:height-crop,crop:width-crop,:), [height, width]);
+        counter = counter+1;
+        % Display as color composite with last corrected frame
+        correctedMean = correctedMean + imgBp;
+
+        idx = idx+1;
+    else
+        pom(:,:,:,counter) = imresize(finale(crop:height-crop,crop:width-crop,:,idx), [height,width]);
+    end
 end
-correctedMean = correctedMean/(ii-2);
-movMean = movMean/(ii-2);
 
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%Part 4 - Frame Stabilisation %%%%%%%%%%%%%%%%%%%%%%
-% after_stable = zeros(height,width,3,size(path_chosen,2));
-% stable_store = [];
-% for v=2:size(path_chosen,2)
-%     disp('Stabilising:');
-%     disp(v);
-%     imgA = rgb2gray(inputImage(:,:,:,path_chosen(v)));
-%     imgB = rgb2gray(inputImage(:,:,:,path_chosen(v-1)));
-%     
-%     pointsA = detectHarrisFeatures(imgA);
-%     pointsB = detectHarrisFeatures(imgB); 
-%     
-%     [featuresA, pointsA] = extractFeatures(imgA, pointsA);
-%     [featuresB, pointsB] = extractFeatures(imgB, pointsB);
-%     
-%     % Extract Descriptor from Feature Point
-%     indexPairs = matchFeatures(featuresA, featuresB);
-%     stable_store = [stable_store, size(indexPairs,1)];
-%     %If there are more than 3 matched points
-%     if(size(indexPairs,1)>13)
-%         pointsA = pointsA(indexPairs(:, 1), :);
-%         pointsB = pointsB(indexPairs(:, 2), :);
-% 
-% %         figure; showMatchedFeatures(imgA, imgB, pointsA, pointsB);
-% %         legend('A', 'B');
-% 
-%         [tform, pointsBm, pointsAm] = estimateGeometricTransform(...
-%         pointsB, pointsA, 'affine');
-% 
-%         % Extract scale and rotation part sub-matrix.
-%         H = tform.T;
-%         R = H(1:2,1:2);
-% 
-%         % Compute theta from mean of two possible arctangents
-%         theta = mean([atan2(R(2),R(1)) atan2(-R(3),R(4))]);
-%         % Compute scale from mean of two stable mean calculations
-%         scale = mean(R([1 4])/cos(theta));
-%         % Translation remains the same:
-%         translation = H(3, 1:2);
-%         % Reconstitute new s-R-t transform:
-%         HsRt = [[scale*[cos(theta) -sin(theta); sin(theta) cos(theta)]; ...
-%           translation], [0 0 1]'];
-%         tformsRT = affine2d(HsRt);
-% 
-%     %     imgBold = imwarp(imgB, tform, 'OutputView', imref2d(size(imgB)));
-%         imgBsRt = imwarp(inputImage(:,:,:,path_chosen(v-1)), tformsRT, 'OutputView', imref2d(size(imgB)));
-% 
-%         crop = 20;
-%         after_stable(:,:,:,v-1) = imresize(imgBsRt(crop:height-crop,crop:width-crop,:), [height, width]);
-%     else
-%         after_stable(:,:,:,v-1) = imresize(inputImage(crop:height-crop,crop:width-crop,:,path_chosen(v-1)), [height,width]);
-%     end
-% end
-% 
-% after_stable(:,:,:,size(path_chosen,2)) = imresize(inputImage(crop:height-crop,crop:width-crop,:,path_chosen(size(path_chosen,2))), [height,width]);
-% % checkmean
-% mean = 0;
-% stab = 0;
-% for ind = 100: 110
-%     mean = mean + origin(:,:,:,ind);
-%     stab = stab + after_stable(:,:,:,ind);
-% end
-% imshow([mean/10, stab/10]);
+correctedMean = correctedMean/(idx-2);
+movMean = movMean/(idx-2);
 
 %Convert to video...
 videoFinal = VideoWriter('final_video.mp4','MPEG-4');
