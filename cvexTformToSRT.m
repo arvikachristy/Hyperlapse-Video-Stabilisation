@@ -14,3 +14,8 @@ s = mean(R([1 4])/cos(ang));
 % Reconstitute transform
 R = [cos(ang) -sin(ang); sin(ang) cos(ang)];
 H = [[s*R; t], [0 0 1]'];
+
+% ss = Tinv(2,1);
+% sc = Tinv(1,1);
+% scale_recovered = sqrt(ss*ss + sc*sc)
+% theta_recovered = atan2(ss,sc)*180/pi

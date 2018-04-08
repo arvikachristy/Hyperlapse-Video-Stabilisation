@@ -195,10 +195,11 @@ while idx <= size(path_chosen,2)
         Hcumulative = HsRt * Hcumulative;
         imgBp = imwarp(colorImg,affine2d(Hcumulative),'OutputView',imref2d(size(colorImg)));
 
-        crop=50;
-        pom(:,:,:,counter) = imresize(imgBp(crop:height-crop,crop:width-crop,:), [height, width]);
+        crop=10;
+        pom(:,:,:,counter) = imgBp;
+%         pom(:,:,:,counter) = imresize(imgBp(crop:height-crop,crop:width-crop,:), [height, width]);
         counter = counter+1;
-        % Display as color composite with last corrected frame
+
         correctedMean = correctedMean + imgBp;
 
         idx = idx+1;

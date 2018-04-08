@@ -14,7 +14,7 @@ indexPairs = matchFeatures(featuresA, featuresB);
 pointsA = pointsA(indexPairs(:, 1), :);
 pointsB = pointsB(indexPairs(:, 2), :);
 
-tform = estimateGeometricTransform(pointsB, pointsA, 'affine');
-H = tform.T;
+tform = ransacRigid(pointsB, pointsA);
+H = tform;
 
 end
