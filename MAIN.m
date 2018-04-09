@@ -158,7 +158,7 @@ while(s>g)
     d=s; s=b;
 end
 
-%Put the final path together
+%Put the final optimal path together
 finale = zeros(height, width, 3, 3);
 origin = zeros(height, width, 3, 3);
 for r = 1:size(path_chosen,2)
@@ -171,7 +171,6 @@ for r = 1:size(path_chosen,2)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%Part 4 - Frame Stabilisation %%%%%%%%%%%%%%%%%%%%%%
-% Process all frames in the video
 movMean = rgb2gray(finale(:,:,:,1));
 imgB = movMean;
 imgBp = imgB;
@@ -180,27 +179,20 @@ idx = 2;
 Rigcumulative = eye(3);
 after_stable = zeros(size(movMean,1),size(movMean,2),3,size(path_chosen,2)-1);
 counter =1;
-ind_store = [];
+
 while idx <= size(path_chosen,2)   
     imgA = imgB;
     imgB = rgb2gray(finale(:,:,:,idx));
     colorImg = finale(:,:,:,idx-1);
     movMean = movMean + imgB;
 
-    [H, indexPairs] = stabile_transform(imgA,imgB);
-    ind_store = [ind_store, size(indexPairs,1)];
-    
+    H = stabile_transform(imgA,imgB);
+
     HsRt = transformRT(H);
     Rigcumulative = HsRt * Rigcumulative;
     imgBp = imwarp(colorImg,affine2d(Rigcumulative),'OutputView',imref2d(size(colorImg)));
     after_stable(:,:,:,counter) = imgBp;
-%     if(size(indexPairs,1)>59)
-%         crop=5;
-%         after_stable(:,:,:,counter) = imresize(imgBp(crop:height-crop,crop:width-crop,:), [height, width]);
-%     else
-%          after_stable(:,:,:,counter) = imresize(imgBp(crop:height-crop,crop:width-crop,:), [height, width]);
-% %        after_stable(:,:,:,counter) = imresize(imgBp(crop:height-crop,crop:width-crop,:,idx), [height,width]);
-%     end
+
     counter = counter+1;
 
     correctedMean = correctedMean + imgBp;
@@ -215,14 +207,12 @@ open(videoFinal);
 after_stable(after_stable>1)=1;
 after_stable(after_stable<0)=0;
 
-for index = 1: size(path_chosen,2)-48
+for index = 1: size(path_chosen,2)-54
     disp(index);
     writeVideo(videoFinal,[finale(:,:,:,index), after_stable(:,:,:,index)])
-%     writeVideo(videoFinal,[origin(:,:,:,index), finale(:,:,:,index), after_stable(:,:,:,index)]);
 end
 close(videoFinal);
 
-implay(finale);
 toc
 
 end

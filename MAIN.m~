@@ -10,6 +10,30 @@ function runme()
 tic
 path = 'shaky-holloway';
 
+origin = zeros(360, 640, 3, 3);
+count = 1;
+    
+for r = 1:8:1500
+            disp(r);
+            if(path(end)=='/')
+                slash='';
+            else
+                slash='/';
+            end
+
+            % Create the filename
+            filename = strcat(path,slash,'op_',r,'.','png');
+
+            % Load image and convert it to gray level
+            gotimg = im2double(imresize(imread(filename), 0.5));        
+
+            origin(:,:,:,count) = gotimg;
+%             writeVideo(videoFinal,origin(:,:,:,count));
+            
+            count = count+1;
+%          end
+end 
+
 %%%%%%%%%%%%%%%%%%%%%%%%Part 1 - Frame Filtering %%%%%%%%%%%%%%%%%%%%%%%%%%
 chosenFrames = frameFiltering(path, 1, 2000);
 
@@ -171,7 +195,6 @@ for r = 1:size(path_chosen,2)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%Part 4 - Frame Stabilisation %%%%%%%%%%%%%%%%%%%%%%
-% Process all frames in the video
 movMean = rgb2gray(finale(:,:,:,1));
 imgB = movMean;
 imgBp = imgB;
@@ -180,27 +203,20 @@ idx = 2;
 Rigcumulative = eye(3);
 after_stable = zeros(size(movMean,1),size(movMean,2),3,size(path_chosen,2)-1);
 counter =1;
-ind_store = [];
+
 while idx <= size(path_chosen,2)   
     imgA = imgB;
     imgB = rgb2gray(finale(:,:,:,idx));
     colorImg = finale(:,:,:,idx-1);
     movMean = movMean + imgB;
 
-    [H, indexPairs] = stabile_transform(imgA,imgB);
-    ind_store = [ind_store, size(indexPairs,1)];
-    
+    H = stabile_transform(imgA,imgB);
+
     HsRt = transformRT(H);
     Rigcumulative = HsRt * Rigcumulative;
     imgBp = imwarp(colorImg,affine2d(Rigcumulative),'OutputView',imref2d(size(colorImg)));
     after_stable(:,:,:,counter) = imgBp;
-%     if(size(indexPairs,1)>59)
-%         crop=5;
-%         after_stable(:,:,:,counter) = imresize(imgBp(crop:height-crop,crop:width-crop,:), [height, width]);
-%     else
-%          after_stable(:,:,:,counter) = imresize(imgBp(crop:height-crop,crop:width-crop,:), [height, width]);
-% %        after_stable(:,:,:,counter) = imresize(imgBp(crop:height-crop,crop:width-crop,:,idx), [height,width]);
-%     end
+
     counter = counter+1;
 
     correctedMean = correctedMean + imgBp;
@@ -215,13 +231,11 @@ open(videoFinal);
 after_stable(after_stable>1)=1;
 after_stable(after_stable<0)=0;
 
-for index = 1: size(path_chosen,2)-53
+for index = 1: size(path_chosen,2)-54
     disp(index);
     writeVideo(videoFinal,[finale(:,:,:,index), after_stable(:,:,:,index)])
-%     writeVideo(videoFinal,[origin(:,:,:,index), finale(:,:,:,index), after_stable(:,:,:,index)]);
 end
 close(videoFinal);
-
 
 toc
 
