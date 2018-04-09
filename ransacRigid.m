@@ -1,7 +1,7 @@
 function holder_model = ransacRigid(matchedPoints1, matchedPoints2)
     holder_model = [];
     holder_perc = 0;
-    holder_diff = 0;
+
     for ran = 1:200
         %Do RANSAC steps here
         index_st = randperm(size(matchedPoints1,1),4);
@@ -11,7 +11,6 @@ function holder_model = ransacRigid(matchedPoints1, matchedPoints2)
 
         model = rigidTransform(pnt1, pnt2);
 
-        
         [x,y] = transformPointsForward(affine2d(model'), matchedPoints1.Location(:,1),...
             matchedPoints1.Location(:,2)); 
 
@@ -21,12 +20,13 @@ function holder_model = ransacRigid(matchedPoints1, matchedPoints2)
         diff = distx + disty;
 
         threshold = 50;
-        percentage = mean(diff<threshold); %Percentage of inliers
+        
+        %Percentage of inliers
+        percentage = mean(diff<threshold); 
 
         if(percentage >holder_perc)
             holder_perc = percentage;
             holder_model = model;
-            holder_diff = diff;
         end
     end
 

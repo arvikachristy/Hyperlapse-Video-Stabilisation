@@ -28,6 +28,8 @@ cm_storage = zeros(totalN, totalN);
 inputImage = resInputImg;
 [height,width,~,imageN] = size(inputImage);
 
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%Part 2 - Frame Matching %%%%%%%%%%%%%%%%%%%%%%%%%%%
 if ~exist('cm_storage.mat')
     for i = 1:imageN-1
@@ -159,14 +161,11 @@ end
 %Put the final path together
 finale = zeros(height, width, 3, 3);
 origin = zeros(height, width, 3, 3);
-%  store = [];
 for r = 1:size(path_chosen,2)
     finale(:,:,:,r) = inputImage(:,:,:,path_chosen(r));
     if(8*r<imageN)
-%         store = [store, 8*r];
         origin(:,:,:,r) = inputImage(:,:,:,8*r);
     else
-%         store = [store, imageN];
         origin(:,:,:,r) = inputImage(:,:,:,imageN);
     end
 end
@@ -178,38 +177,36 @@ imgB = movMean;
 imgBp = imgB;
 correctedMean = imgBp;
 idx = 2;
-Hcumulative = eye(3);
-pom = zeros(size(movMean,1),size(movMean,2),3,size(path_chosen,2)-1);
+Rigcumulative = eye(3);
+after_stable = zeros(size(movMean,1),size(movMean,2),3,size(path_chosen,2)-1);
 counter =1;
 ind_store = [];
 while idx <= size(path_chosen,2)   
-    imgA = imgB; 
+    imgA = imgB;
     imgB = rgb2gray(finale(:,:,:,idx));
-    colorImg = finale(:,:,:,idx);
+    colorImg = finale(:,:,:,idx-1);
     movMean = movMean + imgB;
 
     [H, indexPairs] = stabile_transform(imgA,imgB);
     ind_store = [ind_store, size(indexPairs,1)];
-    if(size(indexPairs,1)>59)
-        HsRt = cvexTformToSRT(H);
-        Hcumulative = HsRt * Hcumulative;
-        imgBp = imwarp(colorImg,affine2d(Hcumulative),'OutputView',imref2d(size(colorImg)));
+    
+    HsRt = transformRT(H);
+    Rigcumulative = HsRt * Rigcumulative;
+    imgBp = imwarp(colorImg,affine2d(Rigcumulative),'OutputView',imref2d(size(colorImg)));
+    after_stable(:,:,:,counter) = imgBp;
+%     if(size(indexPairs,1)>59)
+%         crop=5;
+%         after_stable(:,:,:,counter) = imresize(imgBp(crop:height-crop,crop:width-crop,:), [height, width]);
+%     else
+%          after_stable(:,:,:,counter) = imresize(imgBp(crop:height-crop,crop:width-crop,:), [height, width]);
+% %        after_stable(:,:,:,counter) = imresize(imgBp(crop:height-crop,crop:width-crop,:,idx), [height,width]);
+%     end
+    counter = counter+1;
 
-        crop=10;
-        pom(:,:,:,counter) = imgBp;
-%         pom(:,:,:,counter) = imresize(imgBp(crop:height-crop,crop:width-crop,:), [height, width]);
-        counter = counter+1;
+    correctedMean = correctedMean + imgBp;
 
-        correctedMean = correctedMean + imgBp;
-
-        idx = idx+1;
-    else
-        pom(:,:,:,counter) = imresize(finale(crop:height-crop,crop:width-crop,:,idx), [height,width]);
-    end
+    idx = idx+1;
 end
-
-correctedMean = correctedMean/(idx-2);
-movMean = movMean/(idx-2);
 
 %Convert to video...
 videoFinal = VideoWriter('final_video.mp4','MPEG-4');
@@ -218,9 +215,10 @@ open(videoFinal);
 after_stable(after_stable>1)=1;
 after_stable(after_stable<0)=0;
 
-for index = 1: size(path_chosen,2)
+for index = 1: size(path_chosen,2)-48
     disp(index);
-    writeVideo(videoFinal,finale(:,:,:,index));
+    writeVideo(videoFinal,[finale(:,:,:,index), after_stable(:,:,:,index)])
+%     writeVideo(videoFinal,[origin(:,:,:,index), finale(:,:,:,index), after_stable(:,:,:,index)]);
 end
 close(videoFinal);
 
@@ -233,4 +231,13 @@ function res = c_a(h, i, j)
     ta = 200;
     res = min(((j-i)-(i-h))^2, ta);
 end
+
+
+% pomoori = origin(:,:,:,105);
+% pomoaf = pom(:,:,:,106);
+% for me = 106:114
+%     pomoori = pomoori + origin(:,:,:,me); 
+%     pomoaf = pomoaf + pom(:,:,:,me+1); 
+% end
+
 

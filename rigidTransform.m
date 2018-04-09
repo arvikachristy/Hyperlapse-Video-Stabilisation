@@ -1,34 +1,26 @@
-function transformation = rigidTransform( points1, points2 )
-%COMPUTERIGIDTRANSFORMATION Computers a rigid transformation from points1
-%to points2
-%   This functions assumes that all points are inliers and uses SVD to
-%   compute the best transformation. 
-    points1 = points1.Location;
-    points2 = points2.Location;
+function transformation = rigidTransform(pointsA, pointsB)
 
-    nPoints = size(points1, 1);
-    dimension = size(points1, 2);
+    pointsA = pointsA.Location;
+    pointsB = pointsB.Location;
+
+    pointsN = size(pointsA, 1);
+    dimension = size(pointsA, 2);
     
-    centroid1 = sum(points1, 1)./nPoints;
-    centroid2 = sum(points2, 1)./nPoints;
+    ctrA = sum(pointsA, 1)./pointsN;
+    ctrB = sum(pointsB, 1)./pointsN;
     
-    centered1 = points1 - repmat(centroid1, nPoints, 1);
-    centered2 = points2 - repmat(centroid2, nPoints, 1);
+    centered1 = pointsA - repmat(ctrA, pointsN, 1);
+    centered2 = pointsB - repmat(ctrB, pointsN, 1);
     
-    W = eye(nPoints, nPoints);
-    
-    S = centered1' * W * centered2;
-    
-    [U, Sigma, V] = svd(S);
+    [U, ~, V] = svd(centered1'* eye(pointsN, pointsN) *centered2);
     
     M = eye(dimension, dimension);
     M(dimension, dimension) = det(V*U');
     
-    R = V * M * U';
-    t = centroid2' - R*centroid1';
+    rtt = V*M*U';
     
     transformation = eye(3,3);
-    transformation(1:2, 1:2) = R;
-    transformation(1:2, 3) = t;
+    transformation(1:2, 1:2) = rtt;
+    transformation(1:2, 3) = ctrB' - rtt*ctrA';
 
 end
