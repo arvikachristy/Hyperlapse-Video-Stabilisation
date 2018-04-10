@@ -29,7 +29,6 @@ inputImage = resInputImg;
 [height,width,~,imageN] = size(inputImage);
 
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%Part 2 - Frame Matching %%%%%%%%%%%%%%%%%%%%%%%%%%%
 if ~exist('cm_storage.mat')
     for i = 1:imageN-1
@@ -56,7 +55,6 @@ if ~exist('cm_storage.mat')
             matchedPoints1 = valid_points1(indexPairs(:,1),:);
             matchedPoints2 = valid_points2(indexPairs(:,2),:);
 
-        %     figure; showMatchedFeatures(img1,img2,matchedPoints1,matchedPoints2);
             [holder_diff, holder_model] = ransac(matchedPoints1, matchedPoints2);
 
             cost1 = mean(holder_diff);
@@ -209,7 +207,7 @@ after_stable(after_stable<0)=0;
 
 for index = 1: size(path_chosen,2)-54
     disp(index);
-    writeVideo(videoFinal,[finale(:,:,:,index), after_stable(:,:,:,index)])
+    writeVideo(videoFinal,[origin(:,:,:,index), finale(:,:,:,index), after_stable(:,:,:,index)])
 end
 close(videoFinal);
 
@@ -221,13 +219,4 @@ function res = c_a(h, i, j)
     ta = 200;
     res = min(((j-i)-(i-h))^2, ta);
 end
-
-
-% pomoori = origin(:,:,:,105);
-% pomoaf = pom(:,:,:,106);
-% for me = 106:114
-%     pomoori = pomoori + origin(:,:,:,me); 
-%     pomoaf = pomoaf + pom(:,:,:,me+1); 
-% end
-
 

@@ -10,30 +10,6 @@ function runme()
 tic
 path = 'shaky-holloway';
 
-origin = zeros(360, 640, 3, 3);
-count = 1;
-    
-for r = 1:8:1500
-            disp(r);
-            if(path(end)=='/')
-                slash='';
-            else
-                slash='/';
-            end
-
-            % Create the filename
-            filename = strcat(path,slash,'op_',r,'.','png');
-
-            % Load image and convert it to gray level
-            gotimg = im2double(imresize(imread(filename), 0.5));        
-
-            origin(:,:,:,count) = gotimg;
-%             writeVideo(videoFinal,origin(:,:,:,count));
-            
-            count = count+1;
-%          end
-end 
-
 %%%%%%%%%%%%%%%%%%%%%%%%Part 1 - Frame Filtering %%%%%%%%%%%%%%%%%%%%%%%%%%
 chosenFrames = frameFiltering(path, 1, 2000);
 
@@ -51,7 +27,6 @@ cm_storage = zeros(totalN, totalN);
 
 inputImage = resInputImg;
 [height,width,~,imageN] = size(inputImage);
-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%Part 2 - Frame Matching %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -80,7 +55,6 @@ if ~exist('cm_storage.mat')
             matchedPoints1 = valid_points1(indexPairs(:,1),:);
             matchedPoints2 = valid_points2(indexPairs(:,2),:);
 
-        %     figure; showMatchedFeatures(img1,img2,matchedPoints1,matchedPoints2);
             [holder_diff, holder_model] = ransac(matchedPoints1, matchedPoints2);
 
             cost1 = mean(holder_diff);
@@ -182,7 +156,7 @@ while(s>g)
     d=s; s=b;
 end
 
-%Put the final path together
+%Put the final optimal path together
 finale = zeros(height, width, 3, 3);
 origin = zeros(height, width, 3, 3);
 for r = 1:size(path_chosen,2)
@@ -233,7 +207,7 @@ after_stable(after_stable<0)=0;
 
 for index = 1: size(path_chosen,2)-54
     disp(index);
-    writeVideo(videoFinal,[finale(:,:,:,index), after_stable(:,:,:,index)])
+    writeVideo(videoFinal,[origin(:,:,:,index), finale(:,:,:,index), after_stable(:,:,:,index)])
 end
 close(videoFinal);
 
@@ -245,13 +219,4 @@ function res = c_a(h, i, j)
     ta = 200;
     res = min(((j-i)-(i-h))^2, ta);
 end
-
-
-% pomoori = origin(:,:,:,105);
-% pomoaf = pom(:,:,:,106);
-% for me = 106:114
-%     pomoori = pomoori + origin(:,:,:,me); 
-%     pomoaf = pomoaf + pom(:,:,:,me+1); 
-% end
-
 

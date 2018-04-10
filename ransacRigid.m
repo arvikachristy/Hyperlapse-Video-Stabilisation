@@ -1,33 +1,50 @@
 function holder_model = ransacRigid(matchedPoints1, matchedPoints2)
-    holder_model = [];
-    holder_perc = 0;
 
-    for ran = 1:200
-        %Do RANSAC steps here
-        index_st = randperm(size(matchedPoints1,1),4);
+holder_model = [];
+holder_perc = 0;
 
-        pnt1 = matchedPoints1(index_st, :);
-        pnt2 = matchedPoints2(index_st, :);      
+for ran = 1:200
+    %Do RANSAC steps here
+    index_st = randperm(size(matchedPoints1,1),4);
 
-        model = rigidTransform(pnt1, pnt2);
+    pointsA = matchedPoints1(index_st, :);
+    pointsB = matchedPoints2(index_st, :);      
 
-        [x,y] = transformPointsForward(affine2d(model'), matchedPoints1.Location(:,1),...
-            matchedPoints1.Location(:,2)); 
+    pointsA = pointsA.Location;
+    pointsB = pointsB.Location;
 
-        distx = (x - matchedPoints2.Location(:,1)).^2;
-        disty = (y - matchedPoints2.Location(:,2)).^2;
+    pointsN = size(pointsA, 1); dimension = size(pointsA, 2);
+    ctrA = sum(pointsA, 1)./pointsN;
+    ctrB = sum(pointsB, 1)./pointsN;
 
-        diff = distx + disty;
+    centered1 = pointsA - repmat(ctrA, pointsN, 1);
+    centered2 = pointsB - repmat(ctrB, pointsN, 1);
+    [U,~, V] = svd(centered1'* eye(pointsN, pointsN) *centered2);
 
-        threshold = 50;
-        
-        %Percentage of inliers
-        percentage = mean(diff<threshold); 
+    M = eye(dimension, dimension);
+    M(dimension, dimension) = det(V*U');
 
-        if(percentage >holder_perc)
-            holder_perc = percentage;
-            holder_model = model;
-        end
+    model = eye(3,3);
+    model(1:2, 1:2) = V*M*U';
+    model(1:2, 3) = ctrB' - (V*M*U')*ctrA';
+
+    [x,y] = transformPointsForward(affine2d(model'), matchedPoints1.Location(:,1),...
+        matchedPoints1.Location(:,2)); 
+
+    distx = (x - matchedPoints2.Location(:,1)).^2;
+    disty = (y - matchedPoints2.Location(:,2)).^2;
+
+    diff = distx + disty;
+
+    threshold = 50;
+
+    %Percentage of inliers
+    percentage = mean(diff<threshold); 
+
+    if(percentage >holder_perc)
+        holder_perc = percentage;
+        holder_model = model;
     end
+end
 
 end

@@ -26,7 +26,7 @@ for x= 1:imageN
             m1 = sum(sum((inputImage(:,:,1,x) - inputImage(:,:,1,y)).^2));
             m2 = sum(sum((inputImage(:,:,2,x) - inputImage(:,:,2,y)).^2));
             m3 = sum(sum((inputImage(:,:,3,x) - inputImage(:,:,3,y)).^2));
-`
+
             d_storage(x,y) = sqrt(m1 + m2 + m3);
         end        
     end
